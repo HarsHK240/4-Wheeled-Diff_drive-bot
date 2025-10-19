@@ -1,8 +1,6 @@
 <?xml version="1.0"?>
 <robot name="my_bot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 	
-  <xacro:include filename="/home/ubuntu/mars/src/my_bot_description/urdf/diffbot.ros2_control.xacro" />
-
   <!-- Base link -->
   <link name="base_link">
     <visual>
@@ -48,8 +46,8 @@
 
   <gazebo reference="left_wheel_back">
     <material>Gazebo/Black</material>
-    <mu1>1.0</mu1>
-    <mu2>1.0</mu2>
+    <mu1>100.0</mu1>
+    <mu2>1000.0</mu2>
   </gazebo>
 
   <link name="right_wheel_back">
@@ -71,8 +69,8 @@
 
   <gazebo reference="right_wheel_back">
     <material>Gazebo/Black</material>
-    <mu1>1.0</mu1>
-    <mu2>1.0</mu2>
+    <mu1>100.0</mu1>
+    <mu2>1000.0</mu2>
   </gazebo>
 
   <link name="left_wheel_front">
@@ -94,8 +92,8 @@
 
   <gazebo reference="left_wheel_front">
     <material>Gazebo/Black</material>
-    <mu1>1.0</mu1>
-    <mu2>1.0</mu2>
+    <mu1>100.0</mu1>
+    <mu2>1000.0</mu2>
   </gazebo>
 
   <link name="right_wheel_front">
@@ -117,8 +115,8 @@
 
   <gazebo reference="right_wheel_front">
     <material>Gazebo/Black</material>
-    <mu1>1.0</mu1>
-    <mu2>1.0</mu2>
+    <mu1>10.00</mu1>
+    <mu2>1000.0</mu2>
   </gazebo>
 
   <!-- Wheel joints -->
@@ -165,39 +163,76 @@
     <origin xyz="0.1 0 0.075" rpy="0 0 0"/>
   </joint>
 
-  <!-- Camera sensors -->
+    <!-- Camera sensors -->
   <gazebo reference="camera_link">
     <material>Gazebo/Grey</material>
+
     <sensor name="rgb_camera" type="camera">
       <update_rate>30</update_rate>
       <camera>
         <horizontal_fov>1.047</horizontal_fov>
-        <image><width>640</width><height>480</height><format>R8G8B8</format></image>
-        <clip><near>0.02</near><far>300</far></clip>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.1</near>
+          <far>100</far>
+        </clip>
       </camera>
-      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+
+      <plugin name="rgb_camera_controller" filename="libgazebo_ros_camera.so">
         <always_on>true</always_on>
         <update_rate>30</update_rate>
-        <camera_name>rgb_camera</camera_name>
-        <image_topic_name>image_raw</image_topic_name>
-        <camera_info_topic_name>camera_info</camera_info_topic_name>
+<!-- 
+        <image_topic_name>rgb/image_raw</image_topic_name>
+        <camera_info_topic_name>rgb/camera_info</camera_info_topic_name>
+
+        <depth_image_topic_name>depth/image_raw</depth_image_topic_name>
+        <depth_image_camera_info_topic_name>depth/camera_info</depth_image_camera_info_topic_name>
+        
+        <depth_image_format>R_FLOAT32</depth_image_format>
+        
+        <point_cloud_topic_name>depth/points</point_cloud_topic_name> -->
+        
         <frame_name>camera_link</frame_name>
       </plugin>
     </sensor>
+  </gazebo>
 
-    <sensor name="depth_camera" type="depth_camera">
+  <gazebo reference="camera_link">
+    <material>Gazebo/Grey</material>
+
+    <sensor name="depth_camera" type="depth">
       <update_rate>30</update_rate>
       <camera>
-        <horizontal_fov>1.047</horizontal_fov>
-        <image><width>640</width><height>480</height><format>R8G8B8</format></image>
-        <clip><near>0.02</near><far>300</far></clip>
+        <horizontal_fov>2</horizontal_fov>
+        <image>
+          <width>640</width>
+          <height>480</height>
+          <format>R_FLOAT32</format>
+        </image>
+        <clip>
+          <near>0.1</near>
+          <far>5</far>
+        </clip>
       </camera>
-      <plugin name="depth_camera_controller" filename="libgazebo_ros_depth_camera.so">
+
+      <plugin name="depth_camera_controller" filename="libgazebo_ros_camera.so">
         <always_on>true</always_on>
         <update_rate>30</update_rate>
-        <camera_name>depth_camera</camera_name>
-        <image_topic_name>depth/image_raw</image_topic_name>
-        <camera_info_topic_name>depth/camera_info</camera_info_topic_name>
+
+        <!-- <image_topic_name>rgb/image_raw</image_topic_name>
+        <camera_info_topic_name>rgb/camera_info</camera_info_topic_name>
+
+        <depth_image_topic_name>depth/image_raw</depth_image_topic_name>
+        <depth_image_camera_info_topic_name>depth/camera_info</depth_image_camera_info_topic_name>
+        
+        <depth_image_format>R_FLOAT32</depth_image_format>
+        
+        <point_cloud_topic_name>depth/points</point_cloud_topic_name> -->
+        
         <frame_name>camera_link</frame_name>
       </plugin>
     </sensor>
