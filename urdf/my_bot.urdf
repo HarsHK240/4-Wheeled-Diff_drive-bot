@@ -223,12 +223,12 @@
       <parameters>$(find my_bot_description)/config/my_bot_controllers.yaml</parameters>
     </plugin>
   </gazebo>
-
+<!-- 
     <xacro:diffbot_ros2_control
       name="diffbot_system"
       prefix=""
       use_mock_hardware="true" />
- 
+  -->
 
 
 </robot>

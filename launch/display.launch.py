@@ -21,7 +21,13 @@ def generate_launch_description():
 
     # -------------- build robot_description (xacro) at runtime --------------
     # This Command runs "xacro <urdf_xacro_file>" and returns the expanded URDF string
-    robot_description = {'robot_description': Command(['xacro ', urdf_xacro_file])}
+    robot_description = {
+            'robot_description': Command([
+                'xacro ', ' ', 
+                 urdf_xacro_file,
+                ' use_sim_time:=true'  # <-- Add this argument
+            ])
+        }
 
     # -------------- Gazebo Classic (server + client) --------------
     gazebo_launch = IncludeLaunchDescription(
@@ -48,12 +54,12 @@ def generate_launch_description():
     )
 
     # -------------- controller_manager (ros2_control_node) --------------
-    controller_manager = Node(
-        package='controller_manager',
-        executable='ros2_control_node',
-        parameters=[robot_description, controllers_yaml, {'use_sim_time': True}],
-        output='screen'
-    )
+    # controller_manager = Node(
+    #     package='controller_manager',
+    #     executable='ros2_control_node',
+    #     parameters=[robot_description, controllers_yaml, {'use_sim_time': True}],
+    #     output='screen'
+    # )
 
     # -------------- Spawners for controllers --------------
     joint_state_broadcaster_spawner = Node(
@@ -72,7 +78,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         gazebo_launch,
-        controller_manager,
+        # controller_manager,
         robot_state_publisher,
         spawn_entity,
         joint_state_broadcaster_spawner,

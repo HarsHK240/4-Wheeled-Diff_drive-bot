@@ -23,8 +23,9 @@
         </xacro:unless>
         <xacro:if value="${use_mock_hardware}">
           <hardware>
-            <plugin>mock_components/GenericSystem</plugin>
-            <param name="calculate_dynamics">true</param>
+            <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+            <!-- <plugin>mock_components/GenericSystem</plugin>
+            <param name="calculate_dynamics">true</param> -->
           </hardware>
         </xacro:if>
       </xacro:unless>
