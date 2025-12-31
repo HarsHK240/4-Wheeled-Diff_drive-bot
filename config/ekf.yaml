@@ -1,57 +1,101 @@
-# In my_bot_description/config/ekf.yaml
-ekf_filter_node:
+### 1. LOCAL EKF: Fuses Wheel Odometry + IMU ###
+# output: odom -> base_link transform
+ekf_filter_node_odom:
   ros__parameters:
-    use_sim_time: true
     frequency: 30.0
     two_d_mode: true
     publish_tf: true
-    # The frames your robot uses
+    
+    # Frame Hierarchy for Local EKF
+    map_frame: map
     odom_frame: odom
     base_link_frame: base_link
-    world_frame: odom
+    world_frame: odom  # <--- Local EKF uses odom as world
 
-    # === SENSOR INPUTS ===
-    # Configure each sensor being fused
-
-    # Wheel Odometry from your diff_drive_controller
-    odom0: /diff_drive_controller/odom
-    odom0_config:
-      [false, false, false, # X, Y, Z
-       false, false, false, # roll, pitch, yaw
-       true,  true,  false, # dX, dY, dZ
-       false, false, true,  # dRoll, dPitch, dYaw
-       false, false, false]
+    # Wheel Odometry (Position X, Y and Yaw)
+    odom0: /odom
+    odom0_config: [false, false, false,
+                   false, false, false,
+                   true,  true,  false,
+                   false, false, false,
+                   false, false, false]
     odom0_differential: false
+    odom0_queue_size: 10
 
-    # IMU data
+    # IMU (Yaw and Yaw Velocity)
     imu0: /imu
-    imu0_config:
-      [false, false, false,
-       false, false, true,   # Only use Yaw from the IMU
-       false, false, false,
-       false, false, true,
-       false, false, false]
+    imu0_config: [false, false, false,
+                  false, false, false,
+                  false, false, false,
+                  false, false, true,
+                  true,  true,  false]
     imu0_differential: false
+    imu0_queue_size: 10
+    imu0_remove_gravitational_acceleration: true
 
-    # GPS data (converted to odometry)
-    odom1: /gps
-    odom1_config:
-      [true,  true,  false, # Use GPS for absolute X and Y
-       false, false, false,
-       false, false, false,
-       false, false, false,
-       false, false, false]
-    odom1_differential: false
-    
-    
-navsat_transform:
+### 2. GLOBAL EKF: Fuses Wheel Odom + IMU + GPS ###
+# output: map -> odom transform
+ekf_filter_node_map:
   ros__parameters:
     frequency: 30.0
-    delay: 3.0
-    magnetic_declination_radians: 0.0
-    yaw_offset: 0.0
-    zero_altitude: true
-    broadcast_cartesian_transform: true
-    publish_filtered_gps: true
-    use_odometry_yaw: true
+    two_d_mode: true
+    publish_tf: true
+
+    # Frame Hierarchy for Global EKF
+    map_frame: map
+    odom_frame: odom
+    base_link_frame: base_link
+    world_frame: map  # <--- Global EKF uses map as world
+
+    # Wheel Odometry
+    odom0: /odom
+    odom0_config: [false, false, false,
+                   false, false, false,
+                   true,  true,  false,
+                   false, false, true,
+                   false, false, false]
+    odom0_differential: false
+    odom0_queue_size: 10
+
+    # IMU
+    imu0: /imu
+    imu0_config: [false, false, false,
+                  false, false, false,
+                  false, false, false,
+                  false, false, true,
+                  true,  true,  false]
+    imu0_differential: false
+    imu0_queue_size: 10
+    imu0_remove_gravitational_acceleration: true
+
+    # GPS (Fused as absolute position)
+    # This topic comes from navsat_transform_node
+    odom1: /odometry/gps
+    odom1_config: [true,  true,  false,
+                   false, false, false,
+                   false, false, false,
+                   false, false, false,
+                   false, false, false]
+    odom1_differential: false
+    odom1_queue_size: 10
+
+### 3. NAVSAT TRANSFORM: GPS Lat/Lon -> Odom X/Y ###
+navsat_transform_node:
+  ros__parameters:
+    frequency: 30.0
+    # Wait for the first GPS fix to set the "zero" point
     wait_for_datum: false
+    delay: 0.0
+    
+    # PLEASE CHECK: Magnetic declination for your location (radians)
+    # If 0, it assumes North is 0.
+    magnetic_declination_radians: 0.0
+    
+    # If your IMU reads 0 facing East, use 0.0. 
+    # If it reads 0 facing North (common), use 1.5707963 (pi/2).
+    yaw_offset: 3.14159265
+    
+    zero_altitude: true
+    broadcast_utm_transform: false
+    publish_filtered_gps: true
+    use_odometry_yaw: false

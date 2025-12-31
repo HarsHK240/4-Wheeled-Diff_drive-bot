@@ -27,6 +27,10 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
+install(PROGRAMS
+  scripts/odom.py  # <--- Change this name if your file is named differently
+  DESTINATION lib/${PROJECT_NAME}
+)
 ament_package()
 
 

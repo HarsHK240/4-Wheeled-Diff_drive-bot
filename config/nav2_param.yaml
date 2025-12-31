@@ -7,23 +7,25 @@
 #   following successive relatively close waypoints that fit in a smaller rolling costmap
 lifecycle_manager:
   ros__parameters:
+    use_sim_time: True
     autostart: true
-    node_names: ['controller_server', 'planner_server', 'behavior_server', 'bt_navigator', 'waypoint_follower','map_server']
+    node_names: ['controller_server', 'planner_server', 'behavior_server', 'bt_navigator', 'waypoint_follower']
     bond_timeout: 4.0
     attempt_respawn_reconnection: true
     bond_respawn_max_duration: 10.0
     introspection_mode: "disabled"
 
-map_server:
-  ros__parameters:
-    yaml_filename: ""
-    topic_name: "map"
-    frame_id: "map"
-    introspection_mode: "disabled"
+# map_server:
+#   ros__parameters:
+#     yaml_filename: ""
+#     topic_name: "map"
+#     frame_id: "map"
+#     introspection_mode: "disabled"
 
 bt_navigator:
   ros__parameters:
-    global_frame: map
+    use_sim_time: True
+    global_frame: odom
     robot_base_frame: base_link
     odom_topic: /odom
     bt_loop_duration: 10
@@ -49,6 +51,7 @@ bt_navigator:
 
 controller_server:
   ros__parameters:
+    use_sim_time: True
     controller_frequency: 20.0
     min_x_velocity_threshold: 0.001
     min_y_velocity_threshold: 0.5
@@ -94,7 +97,7 @@ controller_server:
       wz_max: 1.9
       iteration_count: 1
       prune_distance: 1.7
-      transform_tolerance: 0.1
+      transform_tolerance: 1.0
       temperature: 0.3
       gamma: 0.015
       motion_model: "DiffDrive"
@@ -177,6 +180,7 @@ controller_server:
 local_costmap:
   local_costmap:
     ros__parameters:
+      use_sim_time: True
       update_frequency: 5.0
       publish_frequency: 2.0
       global_frame: odom
@@ -217,9 +221,10 @@ local_costmap:
 global_costmap:
   global_costmap:
     ros__parameters:
+      use_sim_time: True
       update_frequency: 1.0
       publish_frequency: 1.0
-      global_frame: map
+      global_frame: odom
       robot_base_frame: base_link
       robot_radius: 0.22
       resolution: 0.1
@@ -233,23 +238,7 @@ global_costmap:
       # origin_y: 0.0
       track_unknown_space: true
       # no static map
-      plugins: ["obstacle_layer", "inflation_layer"]
-      obstacle_layer:
-        plugin: "nav2_costmap_2d::ObstacleLayer"
-        enabled: True
-        observation_sources: scan
-        scan:
-          topic: /scan
-          max_obstacle_height: 2.0
-          clearing: True
-          marking: True
-          data_type: "LaserScan"
-          raytrace_max_range: 3.0
-          raytrace_min_range: 0.0
-          obstacle_max_range: 2.5
-          obstacle_min_range: 0.0
-          # outdoors there will probably be more inf points
-          inf_is_valid: true
+      plugins: ["inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
         cost_scaling_factor: 3.0
@@ -265,6 +254,7 @@ global_costmap:
 
 map_saver:
   ros__parameters:
+    use_sim_time: True
     save_map_timeout: 5.0
     free_thresh_default: 0.25
     occupied_thresh_default: 0.65
@@ -273,6 +263,7 @@ map_saver:
 
 planner_server:
   ros__parameters:
+    use_sim_time: True
     expected_planner_frequency: 20.0
     planner_plugins: ["GridBased"]
     costmap_update_timeout: 1.0
@@ -285,6 +276,7 @@ planner_server:
 
 smoother_server:
   ros__parameters:
+    use_sim_time: True
     smoother_plugins: ["simple_smoother"]
     simple_smoother:
       plugin: "nav2_smoother::SimpleSmoother"
@@ -297,6 +289,7 @@ smoother_server:
 
 behavior_server:
   ros__parameters:
+    use_sim_time: True
     local_costmap_topic: local_costmap/costmap_raw
     global_costmap_topic: global_costmap/costmap_raw
     local_footprint_topic: local_costmap/published_footprint
@@ -321,9 +314,9 @@ behavior_server:
     assisted_teleop:
       plugin: "nav2_behaviors/AssistedTeleop"
     local_frame: odom
-    global_frame: map
+    global_frame: odom
     robot_base_frame: base_link
-    transform_tolerance: 0.1
+    transform_tolerance: 1.0
     simulate_ahead_time: 2.0
     max_rotational_vel: 1.0
     min_rotational_vel: 0.4
@@ -331,6 +324,7 @@ behavior_server:
 
 waypoint_follower:
   ros__parameters:
+    use_sim_time: True
     loop_rate: 20
     stop_on_failure: false
     service_introspection_mode: "disabled"
@@ -342,6 +336,7 @@ waypoint_follower:
 
 velocity_smoother:
   ros__parameters:
+    use_sim_time: True
     smoothing_frequency: 20.0
     scale_velocities: False
     feedback: "OPEN_LOOP"
@@ -356,7 +351,8 @@ velocity_smoother:
 
 collision_monitor:
   ros__parameters:
-    base_frame_id: "base_footprint"
+    use_sim_time: True
+    base_frame_id: "base_link"
     odom_frame_id: "odom"
     cmd_vel_in_topic: "cmd_vel_smoothed"
     cmd_vel_out_topic: "cmd_vel"
@@ -387,6 +383,7 @@ collision_monitor:
 
 docking_server:
   ros__parameters:
+    use_sim_time: True
     controller_frequency: 50.0
     initial_perception_timeout: 5.0
     wait_charge_timeout: 5.0
@@ -441,7 +438,8 @@ docking_server:
 
 loopback_simulator:
   ros__parameters:
-    base_frame_id: "base_footprint"
+    use_sim_time: True
+    base_frame_id: "base_link"
     odom_frame_id: "odom"
     map_frame_id: "map"
     scan_frame_id: "base_scan" # tb4_loopback_simulator.launch.py remaps to 'rplidar_link'
