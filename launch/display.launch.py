@@ -2,6 +2,7 @@
 import os
 import yaml
 
+from launch_ros.actions import SetRemap
 from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -72,12 +73,18 @@ def generate_launch_description():
         package='controller_manager',
         executable='spawner',
         arguments=['diff_drive_controller', '--controller-manager', '/controller_manager'],
-        output='screen'
+        output='screen',
+        # remappings=[
+        #     ('/diff_drive_controller/odom', '/odom_garbage'), # You already added this
+        #     # ADD THIS LINE: Connect standard cmd_vel to the controller
+        #     ('/diff_drive_controller/cmd_vel_unstamped', '/cmd_vel') 
+        # ]
     )
 
     return LaunchDescription([
         gazebo_launch,
         robot_state_publisher,
+        SetRemap(src='/diff_drive_controller/cmd_vel_unstamped', dst='/cmd_vel'),
         spawn_entity,
         joint_state_broadcaster_spawner,
         diff_drive_spawner,
